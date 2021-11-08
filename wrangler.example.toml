@@ -7,3 +7,7 @@ account_id = ""
 zone_id = ""
 
 route = "notion-api.splitbee.io/*"
+
+[env.production]
+name = "your-worker-dev"
+route = "your-custom-route"

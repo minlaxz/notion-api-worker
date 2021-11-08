@@ -1,63 +1,145 @@
-![Notion API Worker](https://user-images.githubusercontent.com/1440854/79893752-cc448680-8404-11ea-8d19-e0308eb32028.png)
-![API Version](https://badgen.net/badge/API%20Version/v1/green)
+![react-notion](https://user-images.githubusercontent.com/1440854/79684011-6c948280-822e-11ea-9e23-1644903796fb.png)
 
-A **serverless wrapper** for the private Notion API. It provides fast and easy access to your Notion content.
-Ideal to make Notion your CMS.
+![npm version](https://badgen.net/npm/v/react-notion) ![npm version](https://badgen.net/david/dep/splitbee/react-notion) ![minzipped sized](https://badgen.net/bundlephobia/minzip/react-notion)
 
-We provide a hosted version of this project on [`https://notion-api.splitbee.io`](https://notion-api.splitbee.io/). You can also [host it yourself](https://workers.cloudflare.com/). Cloudflare offers a generous free plan with up to 100,000 request per day.
+A React renderer for Notion pages.
+Use Notion as CMS for your blog, documentation or personal site.
 
-_Use with caution. This is based on the private Notion API. We can not gurantee it will stay stable._
+**`react-notion` was developed by <a href="http://splitbee.io/">Splitbee</a>. Splitbee is a fast, reliable, free, and modern analytics for any team.**
+
+_This package doesn't handle the communication with the API. Check out [notion-api-worker](https://github.com/splitbee/notion-api-worker) for an easy solution_.
+
+<sub>Created by <a href="https://twitter.com/timolins">Timo Lins</a> & <a href="https://twitter.com/linstobias">Tobias Lins</a> with the help of all <a href="https://github.com/splitbee/react-notion/graphs/contributors">contributors</a> ❤️</sub>
+
+
 
 ## Features
 
-🍭 **Easy to use** – Receive Notion data with a single GET request
+⚡️ **Fast** – Up to 10x faster than Notion\*
 
-🗄 **Table Access** – Get structured data from tables & databases
+🎯 **Accurate** – Results are _almost_ identical
 
-✨ **Blazing Fast** – Built-in [SWR](https://www.google.com/search?q=stale+while+revalidate) caching for instant results
+🔮 **Code Highlighting** – Automatic code highlighting with [prismjs](https://prismjs.com/)
 
-🛫 **CORS Friendly** – Access your data where you need it
+🎨 **Custom Styles** – Styles are easily adaptable. Optional styles included
 
-## Use Cases
+_\* First Meaningful Paint compared to a [hosted example](http://react-notion-example.now.sh/) on [Vercel](https://vercel.com)._
 
-- Use it as data-source for blogs and documentation. Create a table with pages and additional metadata. Query the `/table` endpoints everytime you want to render a list of all pages.
 
-- Get data of specific pages, which can be rendered with [`react-notion`](https://github.com/splitbee/react-notion)
+**react-notion** is best suited as minimal renderer for blogs & content pages. If you're looking for a full-featured solution to render Notion-like pages, check out [react-notion-x](https://github.com/NotionX/react-notion-x).
 
-## Endpoints
 
-### Load page data
+## Install
 
-`/v1/page/<PAGE_ID>`
+```bash
+npm install react-notion
+```
 
-Example ([Source Notion Page](https://www.notion.so/react-notion-example-2e22de6b770e4166be301490f6ffd420))
+## How to use
 
-[`https://notion-api.splitbee.io/v1/page/2e22de6b770e4166be301490f6ffd420`](https://notion-api.splitbee.io/v1/page/2e22de6b770e4166be301490f6ffd420)
+### Minimal Example
 
-Returns all block data for a given page.
-For example, you can render this data with [`react-notion`](https://github.com/splitbee/react-notion).
+We can store the API response in a `.json` file and import it.
 
-### Load data from table
+```js
+import "react-notion/src/styles.css";
+import "prismjs/themes/prism-tomorrow.css"; // only needed for code highlighting
+import { NotionRenderer } from "react-notion";
 
-`/v1/table/<PAGE_ID>`
+import response from "./load-page-chunk-response.json"; // https://www.notion.so/api/v3/loadPageChunk
 
-Example ([Source Notion Page](https://www.notion.so/splitbee/20720198ca7a4e1b92af0a007d3b45a4?v=4206debfc84541d7b4503ebc838fdf1e))
+const blockMap = response.recordMap.block;
 
-[`https://notion-api.splitbee.io/v1/table/20720198ca7a4e1b92af0a007d3b45a4`](https://notion-api.splitbee.io/v1/table/20720198ca7a4e1b92af0a007d3b45a4)
+export default () => (
+  <div style={{ maxWidth: 768 }}>
+    <NotionRenderer blockMap={blockMap} />
+  </div>
+);
+```
 
-## Authentication for private pages
+A working example can be found inside the `example` directory.
 
-All public pages can be accessed without authorization. If you want to fetch private pages there are two options.
+### Next.js Example
 
-- The recommended way is to host your own worker with the `NOTION_TOKEN` environment variable set. You can find more information in the [Cloudflare Workers documentation](https://developers.cloudflare.com/workers/reference/apis/environment-variables/).
-- Alternatively you can set the `Authorization: Bearer <NOTION_TOKEN>` header to authorize your requests.
+In this example we use [Next.js](https://github.com/zeit/next.js) for SSG. We use [notion-api-worker](https://github.com/splitbee/notion-api-worker) to fetch data from the API.
 
-### Receiving the token
+`/pages/my-post.jsx`
 
-To obtain your token, login to Notion and open your DevTools and find your cookies. There should be a cookie called `token_v2`, which is used for the authorization.
+```js
+import "react-notion/src/styles.css";
+import "prismjs/themes/prism-tomorrow.css";
+
+import { NotionRenderer } from "react-notion";
+
+export async function getStaticProps() {
+  const data = await fetch(
+    "https://notion-api.splitbee.io/v1/page/<NOTION_PAGE_ID>"
+  ).then(res => res.json());
+
+  return {
+    props: {
+      blockMap: data
+    }
+  };
+}
+
+export default ({ blockMap }) => (
+  <div style={{ maxWidth: 768 }}>
+    <NotionRenderer blockMap={blockMap} />
+  </div>
+);
+```
+
+## Sites using react-notion
+
+List of pages that implement this library.
+
+- [Splitbee Blog](https://splitbee.io/blog)
+- [PS Tunnel](https://pstunnel.com/blog)
+- [timo.sh](https://timo.sh) – _[Source](https://github.com/timolins/timo-sh)_
+
+## Supported Blocks
+
+Most common block types are supported. We happily accept pull requests to add support for the missing blocks.
+
+| Block Type        | Supported  | Notes                                                                                 |
+| ----------------- | ---------- | ------------------------------------------------------------------------------------- |
+| Text              | ✅ Yes     |                                                                                       |
+| Heading           | ✅ Yes     |                                                                                       |
+| Image             | ✅ Yes     |                                                                                       |
+| Image Caption     | ✅ Yes     |                                                                                       |
+| Bulleted List     | ✅ Yes     |                                                                                       |
+| Numbered List     | ✅ Yes     |                                                                                       |
+| Quote             | ✅ Yes     |                                                                                       |
+| Callout           | ✅ Yes     |                                                                                       |
+| Column            | ✅ Yes     |                                                                                       |
+| iframe            | ✅ Yes     |                                                                                       |
+| Video             | ✅ Yes     | Only embedded videos                                                                  |
+| Divider           | ✅ Yes     |                                                                                       |
+| Link              | ✅ Yes     |                                                                                       |
+| Code              | ✅ Yes     |                                                                                       |
+| Web Bookmark      | ✅ Yes     |                                                                                       |
+| Toggle List       | ✅ Yes     |                                                                                       |
+| Page Links        | ✅ Yes     |                                                                                       |
+| Header            | ✅ Yes     | Enable with `fullPage`                                                                |
+| Databases         | ❌ Missing | Not planned. Supported by [react-notion-x](https://github.com/NotionX/react-notion-x) |
+| Checkbox          | ❌ Missing | Supported by [react-notion-x](https://github.com/NotionX/react-notion-x)              |
+| Table Of Contents | ❌ Missing | Supported by [react-notion-x](https://github.com/NotionX/react-notion-x)              |
+
+## Block Type Specific Caveats
+
+When using a code block in your Notion page, `NotionRenderer` will use `prismjs` to detect the language of the code block.
+By default in most project, `prismjs` won't include all language packages in the minified build of your project.
+This tends to be an issue for those using `react-notion` in a `next.js` project.
+To ensure the programming language is correctly highlighted in production builds, one should explicitly imported into the project.
+
+```jsx
+import 'prismjs/components/prism-{language}';
+```
 
 ## Credits
 
-- [Timo Lins](https://twitter.com/timolins) – Idea, Documentation
-- [Tobias Lins](https://twitter.com/linstobias) – Code
-- [Travis Fischer](https://twitter.com/transitive_bs) – Code
+- [Tobias Lins](https://tobi.sh) – Idea, Code
+- [Timo Lins](https://timo.sh) – Code, Documentation
+- [samwightt](https://github.com/samwightt) – Inspiration & API Typings
+- [All people that contributed 💕](https://github.com/splitbee/react-notion/graphs/contributors)
